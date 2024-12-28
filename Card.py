@@ -10,7 +10,7 @@ class Card:
             print("카드가 존재하지 않습니다")
             print(self.deck.cards)
         else:
-            return print(self.deck.cards.pop())
+            return self.deck.cards.pop()
 
     def dealer_Card_Hit(self):
         if len(self.deck.cards) == 0:

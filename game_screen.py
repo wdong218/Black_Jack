@@ -2,7 +2,8 @@ import pygame
 from button import Button # Button 클래스를 가져옴
 from Deck import Deck
 from Card import Card
-
+from player import player
+from dealer import dealer
 class GameScreen:
     def __init__(self, screen):
         # 초기화
@@ -31,14 +32,22 @@ class GameScreen:
         self.deck.create_Deck()
         self.deck.shuffle()
         self.card = Card(self.deck)
+        self.player = player()
+        self.dealer = dealer()
         print(self.deck.cards)
 
 
     def hit(self):
         print("카드를 분배 중 입니다!")
-        self.card.player_Card_Hit()
+        player_card = self.card.player_Card_Hit()  # Deck에서 카드 한 장 뽑기
+        self.player.add_player_card(player_card)  # 카드 추가 및 점수 업데이트
+        dealer_card = self.card.dealer_Card_Hit()
+        self.dealer.add_dealer_card(dealer_card)
+        print("Player's cards:", self.player.get_player_card())
+        print("Player's score:", self.player.get_player_score())
 
-
+        print("Dealer's cards:", self.dealer.get_dealer_card())
+        print("Dealer's score:", self.dealer.get_dealer_score())
 
     def stand(self):
         print("Stand!")
