@@ -1,12 +1,15 @@
 import pygame
-from button import Button  # Button 클래스를 가져옴
+from button import Button # Button 클래스를 가져옴
+from Deck import Deck
+from Card import Card
 
 class GameScreen:
     def __init__(self, screen):
         # 초기화
         self.screen = screen
         self.font = pygame.font.Font(None, 30)
-
+        self.deck = None  # 초기에는 None
+        self.card = None
         # 버튼 생성
         self.buttons = [
             Button(100, 500, 100, 40, "Start", (0, 0, 255), (0, 255, 0), (255, 255, 255), self.start_game),
@@ -24,9 +27,18 @@ class GameScreen:
     # 버튼 동작
     def start_game(self):
         print("Game Started!")
+        self.deck = Deck()  # Deck 객체 생성
+        self.deck.create_Deck()
+        self.deck.shuffle()
+        self.card = Card(self.deck)
+        print(self.deck.cards)
+
 
     def hit(self):
-        print("Hit!")
+        print("카드를 분배 중 입니다!")
+        self.card.player_Card_Hit()
+
+
 
     def stand(self):
         print("Stand!")
