@@ -10,11 +10,11 @@ class GameManager():
         player_score = self.player.get_player_score()
         dealer_score = self.dealer.get_dealer_score()
         if player_score == dealer_score:
-            self.winner = "draw"
+            self.winner = "비겼습니다!"
         elif player_score > dealer_score:
-            self.winner = "player"
+            self.winner = "당신입니다!"
         else:
-            self.winner = "dealer"
+            self.winner = "딜러입니다!"
 
     def get_winner(self):
         return self.winner
