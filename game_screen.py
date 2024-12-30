@@ -6,10 +6,10 @@ from player import player
 from dealer import dealer
 from GameManager import GameManager
 class GameScreen:
-    def __init__(self, screen):
+    def __init__(self, screen,font):
         # 초기화
         self.screen = screen
-        self.font = pygame.font.Font(None, 30)
+        self.font = font  # 메인에서 전달받은 폰트 사용
         self.background_image = pygame.image.load("background_image/1_image.jpg")
         self.background_image = pygame.transform.scale(self.background_image, (1280, 720))  # 크기 조정
 
@@ -21,12 +21,13 @@ class GameScreen:
         self.player_cards = []  # 플레이어 카드 초기화
         self.dealer_cards = []
         self.player_score = 0
-        self.game_started = False  # 게임 시작 여부를 나타내는 속성 초기화
+        self.game_started = False # 게임 시작 여부를 나타내는 속성 초기화
+        self.show_text = False
         # 버튼 생성
         self.buttons = [
-            Button(490, 640, 100, 40, "Start", (0, 0, 255), (0, 255, 0), (255, 255, 255), self.start_game),  # 화면 중앙 왼쪽
-            Button(610, 640, 100, 40, "Hit", (0, 0, 255), (0, 255, 0), (255, 255, 255), self.hit),  # 화면 중앙
-            Button(730, 640, 100, 40, "Stand", (0, 0, 255), (0, 255, 0), (255, 255, 255), self.stand),  # 화면 중앙 오른쪽
+            Button(490, 640, 100, 40, "Start", "#6C91C2", "#9AB9E8", "#FFFFFF", self.start_game),  # 파란색 버튼
+            Button(610, 640, 100, 40, "Hit", "#8EC6A6", "#B4DEC5", "#FFFFFF", self.hit),  # 초록색 버튼
+            Button(730, 640, 100, 40, "Stand", "#E9A869", "#F4C089", "#FFFFFF", self.stand),  # 주황색 버튼
         ]
 
         self.card_image_map = {
@@ -58,7 +59,7 @@ class GameScreen:
 
     # 버튼 동작
     def start_game(self):
-        print("Game Started!")
+        self.show_message("카드를 섞는 중입니다!", (255, 255, 255),duration= 1000)  # 결과 메시지
         self.deck = Deck()  # Deck 객체 생성
         self.deck.create_Deck()
         self.deck.shuffle()
@@ -72,38 +73,46 @@ class GameScreen:
         self.game_started = True  # 게임 시작 상태로 설정
         self.draw()  # 화면 업데이트
 
+    def show_message(self, message, color, duration=2000):
+        """메시지를 화면에 일정 시간 동안 표시"""
+        text_surface = self.font.render(message, True, color)
+        text_rect = text_surface.get_rect(center=(600, 300))
+        self.screen.blit(text_surface, text_rect)
+        pygame.display.flip()  # 화면 업데이트
+        # 일정 시간 대기
+        pygame.time.wait(duration)
 
     def hit(self):
-        if self.stand_push == False:
-            print("카드를 분배 중 입니다!")
-            player_card = self.card.player_Card_Hit()  # Deck에서 카드 한 장 뽑기
-            self.player.add_player_card(player_card)  # 카드 추가 및 점수 업데이트
-            print(self.player.player_card)
-            print(self.player.player_score)
-            if self.player.get_player_score() > 21:
-                print("Player busted! Dealer wins!")
-                self.stand_push = True
-        else:
-            print("이미 종료된 게임입니다. Start 버튼을 눌러주세요")
+        if self.game_started:
+            if not self.stand_push:
+                # 카드 분배 로직
+                player_card = self.card.player_Card_Hit()  # Deck에서 카드 한 장 뽑기
+                self.player.add_player_card(player_card)  # 카드 추가 및 점수 업데이트
+                print(self.player.player_card)
+                print(self.player.player_score)
 
+                # 버스트 체크
+                if self.player.get_player_score() > 21:
+                    self.show_message("버스트! 딜러가 승리했습니다", (255, 215, 0))  # 결과 메시지
+                    self.stand_push = True  # 게임 종료 상태
+            else:
+                self.show_message("게임이 이미 종료되었습니다. Start 버튼을 누르세요", (255, 0, 0))  # 빨간색 메시지
+        else:
+            self.show_message("Start 버튼을 누르세요", (255, 0, 0))  # 빨간색 메시지
     def stand(self):
         if self.player.player_score > 21:
-            print("player Bust, Winner = Dealer")
+            self.show_message("버스트! 딜러가 승리했습니다.", (255, 215, 0))  # 결과 메시지
         else:
             while self.dealer.dealer_score < 17:
                 dealer_card = self.card.dealer_Card_Hit()
                 self.dealer.add_dealer_card(dealer_card)
             if self.dealer.get_dealer_score() > 21:
-                print("Dealer busted! Player wins!")
-                print("Dealer card = ", self.dealer.dealer_card)
-                print("Dealer score = ", self.dealer.dealer_score)
+                self.show_message("딜러 버스트 ! 당신이 승리했습니다", (0, 0, 255))  # 결과 메시지
                 self.stand_push = True
             else:
                 self.GameManager = GameManager(self.player, self.dealer)
                 self.GameManager.comparison()
-                print("Dealer card = ", self.dealer.dealer_card)
-                print("Dealer score = ", self.dealer.dealer_score)
-                print("Winner : ", self.GameManager.get_winner())
+                self.show_message("승자는 : " + self.GameManager.get_winner(),(0, 128, 0))
                 self.stand_push = True
 
     # 이벤트 처리
@@ -129,7 +138,7 @@ class GameScreen:
 
         # 버튼 그리기
         for button in self.buttons:
-            button.check_hover(pygame.mouse.get_pos())
+            button.is_hovered(pygame.mouse.get_pos())
             button.draw(self.screen, self.font)
 
         pygame.display.flip()  # 화면 업데이트
