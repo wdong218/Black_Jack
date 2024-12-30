@@ -22,13 +22,20 @@ class dealer:
         ace_count = 0
 
         for card in self.dealer_card:
-            if card == "A":
+            if "A" in card:
                 score += 11
                 ace_count += 1
-            elif card in ["J", "Q", "K"]:
+            elif "J" in card:
+                score += 10
+            elif "K" in card:
+                score += 10
+            elif "Q" in card:
                 score += 10
             else:
-                score += int(card)
+                if len(card) == 3:
+                    score += int(card[:2])
+                else:
+                    score += int(card[0])
 
         # Ace 조정: 점수가 21을 초과할 경우 11을 1로 변경
         while score > 21 and ace_count > 0:
