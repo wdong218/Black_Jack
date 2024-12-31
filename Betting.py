@@ -16,7 +16,7 @@ class Betting:
         #누를때마다 베팅 금액 감소
     def betting_manage(self,winner):
         if winner:
-            self.asset.set_asset(self.current)
+            self.asset.set_asset(self.current+500)
             self.current = 0
         else:
             q = -self.current
