@@ -5,6 +5,8 @@ from Card import Card
 from player import player
 from dealer import dealer
 from GameManager import GameManager
+from Betting import Betting
+from asset import Asset
 class GameScreen:
     def __init__(self, screen,font):
         # 초기화
@@ -12,6 +14,8 @@ class GameScreen:
         self.font = font  # 메인에서 전달받은 폰트 사용
         self.background_image = pygame.image.load("background_image/1_image.jpg")
         self.background_image = pygame.transform.scale(self.background_image, (1280, 720))  # 크기 조정
+        self.betting = Betting()
+        self.asset = Asset()
 
         self.deck = None  # 초기에는 None
         self.card = None
@@ -28,6 +32,8 @@ class GameScreen:
             Button(490, 640, 100, 40, "Start", "#6C91C2", "#9AB9E8", "#FFFFFF", self.start_game),  # 파란색 버튼
             Button(610, 640, 100, 40, "Hit", "#8EC6A6", "#B4DEC5", "#FFFFFF", self.hit),  # 초록색 버튼
             Button(730, 640, 100, 40, "Stand", "#E9A869", "#F4C089", "#FFFFFF", self.stand),  # 주황색 버튼
+            Button(200, 640, 100, 40, "UP", "#4CAF50", "#228B22", "#FFFFFF", self.betting.betting_up),
+            Button(300, 640, 100, 40, "DOWN", "#FF7043", "#F4511E", "#FFFFFF", self.betting.betting_down)
         ]
 
         self.card_image_map = {
@@ -53,8 +59,9 @@ class GameScreen:
         }
 
         # 플레이어 상태 초기화
-        self.player_assets = 1000
-        self.bet_amount = 50
+        self.player_assets = self.asset.get_asset()
+        self.bet_amount = self.betting.get_betting()
+
 
 
     # 버튼 동작
@@ -88,13 +95,14 @@ class GameScreen:
                 # 카드 분배 로직
                 player_card = self.card.player_Card_Hit()  # Deck에서 카드 한 장 뽑기
                 self.player.add_player_card(player_card)  # 카드 추가 및 점수 업데이트
-                print(self.player.player_card)
-                print(self.player.player_score)
 
                 # 버스트 체크
                 if self.player.get_player_score() > 21:
                     self.show_message("버스트! 딜러가 승리했습니다", (255, 215, 0))  # 결과 메시지
+                    self.betting.betting_manage(winner=False)
                     self.stand_push = True  # 게임 종료 상태
+                    self.asset.load_asset()
+                    self.player_assets = self.asset.get_asset()
             else:
                 self.show_message("게임이 이미 종료되었습니다. Start 버튼을 누르세요", (255, 0, 0))  # 빨간색 메시지
         else:
@@ -102,17 +110,32 @@ class GameScreen:
     def stand(self):
         if self.player.player_score > 21:
             self.show_message("버스트! 딜러가 승리했습니다.", (255, 215, 0))  # 결과 메시지
+            self.betting.betting_manage(winner=False)
+            self.asset.load_asset()
+            self.player_assets = self.asset.get_asset()
         else:
             while self.dealer.dealer_score < 17:
                 dealer_card = self.card.dealer_Card_Hit()
                 self.dealer.add_dealer_card(dealer_card)
             if self.dealer.get_dealer_score() > 21:
                 self.show_message("딜러 버스트 ! 당신이 승리했습니다", (0, 0, 255))  # 결과 메시지
+                self.betting.betting_manage(winner=True)
+                self.asset.load_asset()
+                self.player_assets = self.asset.get_asset()
                 self.stand_push = True
             else:
                 self.GameManager = GameManager(self.player, self.dealer)
                 self.GameManager.comparison()
                 self.show_message("승자는 : " + self.GameManager.get_winner(),(0, 128, 0))
+                if self.GameManager.get_winnerTF() == 1:
+                    self.betting.betting_manage(winner=True)
+                    self.player_assets = self.asset.get_asset()
+                    self.asset.load_asset()
+                elif self.GameManager.get_winnerTF() == 0:
+                    self.betting.betting_manage(winner=False)
+                    self.player_assets = self.asset.get_asset()
+                    self.asset.load_asset()
+
                 self.stand_push = True
 
     # 이벤트 처리
@@ -129,17 +152,20 @@ class GameScreen:
     def draw(self):
         # 배경 이미지 그리기
         self.screen.blit(self.background_image, (0, 0))  # 화면에 배경 이미지 표시
+        self.draw_player_betting((10,10))
+        self.draw_player_asset((10,10))
 
         # 게임 시작 후 카드 및 정보를 그리기
         if self.game_started:
             self.draw_cards(self.player.get_player_card(), 200, 400)
             self.draw_dealer_cards()
-            self.draw_player_info((10, 10))
+            self.draw_player_score((10, 10))
 
         # 버튼 그리기
         for button in self.buttons:
             button.is_hovered(pygame.mouse.get_pos())
             button.draw(self.screen, self.font)
+            self.draw_player_betting((10,10))
 
         pygame.display.flip()  # 화면 업데이트
 
@@ -194,12 +220,19 @@ class GameScreen:
                 print(f"이미지 파일을 찾을 수 없습니다: {image_path}")
 
     # 플레이어 정보 그리기
-    def draw_player_info(self, position):
-        asset_text = f"Assets: ${self.player_assets}"
+    def draw_player_score(self, position):
         score_text = f"Score: {self.player.get_player_score()}"
-        bet_text = f"Bet: ${self.bet_amount}"
+        x, y = position
+        self.screen.blit(self.font.render(score_text, True, (255, 255, 255)), (x, y + 60))
 
+    def draw_player_betting(self,position):
+        bet_text = self.betting.get_betting()
+        bet_text = str(bet_text)
+        x, y = position
+        self.screen.blit(self.font.render(bet_text, True, (255, 255, 255)), (x, y + 30))
+    def draw_player_asset(self,position):
+        asset_text = self.asset.get_asset()
+        asset_text = str(asset_text)
         x, y = position
         self.screen.blit(self.font.render(asset_text, True, (255, 255, 255)), (x, y))
-        self.screen.blit(self.font.render(score_text, True, (255, 255, 255)), (x, y + 30))
-        self.screen.blit(self.font.render(bet_text, True, (255, 255, 255)), (x, y + 60))
+
