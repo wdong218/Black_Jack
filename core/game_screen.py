@@ -1,5 +1,5 @@
 import pygame
-from ui.button import Button # Button 클래스를 가져옴
+from ui.button import Button
 from core.Deck import Deck
 from core.Card import Card
 from entities.player import player
@@ -27,11 +27,12 @@ class GameScreen:
         self.dealer_cards = []
         self.player_score = 0
         self.game_started = False # 게임 시작 여부를 나타내는 속성 초기화
+        self.game_started_betting = False #게임 시작 시 베팅을 금지하기 위한 선언
         self.show_text = False
         self.soundmanage = SoundManage()
         # 버튼 생성
         self.buttons = [
-            Button(490, 640, 100, 40, "Start", "#6C91C2", "#9AB9E8", "#FFFFFF", self.start_game),  # 파란색 버튼
+            Button(490, 640, 100, 40, "Start", "#6C91C2", "#9AB9E8", "#FFFFFF", self.restart_game),  # 파란색 버튼
             Button(610, 640, 100, 40, "Hit", "#8EC6A6", "#B4DEC5", "#FFFFFF", self.hit),  # 초록색 버튼
             Button(730, 640, 100, 40, "Stand", "#E9A869", "#F4C089", "#FFFFFF", self.stand),  # 주황색 버튼
             Button(200, 640, 100, 40, "UP", "#4CAF50", "#228B22", "#FFFFFF", self.betting_up),
@@ -76,20 +77,24 @@ class GameScreen:
 
     # 버튼 동작
     def start_game(self):
-        self.soundmanage.play_start_button_sound()
-        self.show_message("카드를 섞는 중입니다!", (255, 255, 255),duration= 1000)  # 결과 메시지
-        self.deck = Deck()  # Deck 객체 생성
-        self.deck.create_Deck()
-        self.deck.shuffle()
-        self.card = Card(self.deck)
-        self.player = player()  # 플레이어 초기화
-        self.dealer = dealer()  # 딜러 초기화
-        self.player_cards = self.player.get_player_card()  # 플레이어 카드 초기화
-        self.dealer_cards = self.dealer.get_dealer_card()  # 딜러 카드 초기화
-        self.player_score = self.player.get_player_score()
-        self.stand_push = False
-        self.game_started = True  # 게임 시작 상태로 설정
-        self.draw()  # 화면 업데이트
+        if self.game_started == False: #게임을 계속 시작하는걸 방지하기 위함
+            self.soundmanage.play_start_button_sound()
+            self.show_message("카드를 섞는 중입니다!", (255, 255, 255), duration=1000)  # 결과 메시지
+            self.deck = Deck()  # Deck 객체 생성
+            self.deck.create_Deck() # 카드생성
+            self.deck.shuffle() # 카드섞기
+            self.card = Card(self.deck) #card에 카드덱 전달
+            self.player = player()  # 플레이어 초기화
+            self.dealer = dealer()  # 딜러 초기화
+            self.player_cards = self.player.get_player_card()  # 플레이어 카드 초기화
+            self.dealer_cards = self.dealer.get_dealer_card()  # 딜러 카드 초기화
+            self.player_score = self.player.get_player_score()
+            self.stand_push = False #스탠드 버튼 초기화
+            self.game_started = True  # 게임 시작 상태로 설정
+            self.game_started_betting = True #베팅 금지를 위해 true로 변경
+            self.draw()  # 화면 업데이트
+        else:
+            self.show_message("게임 중 입니다.", (255, 0, 0))  # 빨간색 메시지
 
     def show_message(self, message, color, duration=2000):
         """메시지를 화면에 일정 시간 동안 표시"""
@@ -103,7 +108,7 @@ class GameScreen:
     def hit(self):
         self.soundmanage.hit_sound()
         if self.game_started:
-            if not self.stand_push:
+            if not self.stand_push: #스탠드 버튼을 안눌렀을때 히트를 진행
                 # 카드 분배 로직
                 player_card = self.card.player_Card_Hit()  # Deck에서 카드 한 장 뽑기
                 self.player.add_player_card(player_card)  # 카드 추가 및 점수 업데이트
@@ -112,10 +117,12 @@ class GameScreen:
                 if self.player.get_player_score() > 21:
                     self.soundmanage.fail_sound()
                     self.show_message("버스트! 딜러가 승리했습니다", (255, 215, 0))  # 결과 메시지
-                    self.betting.betting_manage(winner=False)
+                    self.betting.betting_manage(2) #베팅 매니저에 2를 전달 2는 패배를 의미
                     self.stand_push = True  # 게임 종료 상태
-                    self.asset.load_asset()
-                    self.player_assets = self.asset.get_asset()
+                    self.game_started_betting = False #베팅이 가능한 상태로 변경
+                    self.game_started = False #게임 시작이 가능한 상태로 변경
+                    self.asset.load_asset() #재산을 불러오기
+                    self.player_assets = self.asset.get_asset() #플레이어 재산 갱신
             else:
                 self.show_message("게임이 이미 종료되었습니다. Start 버튼을 누르세요", (255, 0, 0))  # 빨간색 메시지
         else:
@@ -125,34 +132,47 @@ class GameScreen:
         if self.player.player_score > 21:
             self.soundmanage.fail_sound()
             self.show_message("버스트! 딜러가 승리했습니다.", (255, 215, 0))  # 결과 메시지
-            self.betting.betting_manage(winner=False)
+            self.betting.betting_manage(2)
             self.asset.load_asset()
             self.player_assets = self.asset.get_asset()
+            self.game_started_betting = False
         else:
-            while self.dealer.dealer_score < 17:
+            while self.dealer.dealer_score < 17: #딜러의 카드 뽑기
                 dealer_card = self.card.dealer_Card_Hit()
                 self.dealer.add_dealer_card(dealer_card)
+
             if self.dealer.get_dealer_score() > 21:
                 self.soundmanage.win_sound()
-                self.show_message("딜러 버스트 ! 당신이 승리했습니다", (0, 0, 255))  # 결과 메시지
-                self.betting.betting_manage(winner=True)
+                self.show_message("딜러 버스트 ! 당신이 승리했습니다", (0, 0, 255))  # 결과 메시
+                self.betting.betting_manage(1) #승리 시 베팅 매니저에 1을 전달
                 self.asset.load_asset()
                 self.player_assets = self.asset.get_asset()
                 self.stand_push = True
+                self.game_started_betting = False
             else:
                 self.GameManager = GameManager(self.player, self.dealer)
                 self.GameManager.comparison()
                 self.show_message("승자는 : " + self.GameManager.get_winner(),(0, 128, 0))
+                #이겼을 경우
                 if self.GameManager.get_winnerTF() == 1:
                     self.soundmanage.win_sound()
-                    self.betting.betting_manage(winner=True)
+                    self.betting.betting_manage(1)
                     self.player_assets = self.asset.get_asset()
                     self.asset.load_asset()
+                    self.game_started_betting = False
+                #패배
                 elif self.GameManager.get_winnerTF() == 0:
                     self.soundmanage.fail_sound()
-                    self.betting.betting_manage(winner=False)
+                    self.betting.betting_manage(2)
                     self.player_assets = self.asset.get_asset()
                     self.asset.load_asset()
+                    self.game_started_betting = False
+                #비겼을경우
+                else:
+                    self.betting.betting_manage(3) #3은 draw를 의미
+                    self.player_assets = self.asset.get_asset()
+                    self.asset.load_asset()
+                    self.game_started_betting = False
 
                 self.stand_push = True
 
@@ -252,16 +272,19 @@ class GameScreen:
         x, y = position
         self.screen.blit(self.font.render(asset_text, True, (255, 255, 255)), (x, y))
     def betting_up(self):
-        if self.game_started:
+        if self.game_started_betting: #게임 도중 베팅 금액 변경을 막음
             self.show_message("게임 중 입니다. 끝난 후 베팅해주세요.", (255, 0, 0))  # 빨간색 메시지
         else:
             self.betting.betting_up()
 
     def betting_down(self):
-        if self.game_started:
+        if self.game_started_betting:
             self.show_message("게임 중 입니다. 끝난 후 베팅해주세요", (255, 0, 0))  # 빨간색 메시지
         else:
             self.betting.betting_down()
+    def restart_game(self): #게임 종료 후 딜러의 카드를 띄워주기 위한 재시작 메소드
+        self.game_started = False
+        self.start_game()
 
 
 
