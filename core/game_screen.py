@@ -129,52 +129,56 @@ class GameScreen:
             self.show_message("Start 버튼을 누르세요", (255, 0, 0))  # 빨간색 메시지
     def stand(self):
         self.soundmanage.stand_sound()
-        if self.player.player_score > 21:
-            self.soundmanage.fail_sound()
-            self.show_message("버스트! 딜러가 승리했습니다.", (255, 215, 0))  # 결과 메시지
-            self.betting.betting_manage(2)
-            self.asset.load_asset()
-            self.player_assets = self.asset.get_asset()
-            self.game_started_betting = False
-        else:
-            while self.dealer.dealer_score < 17: #딜러의 카드 뽑기
-                dealer_card = self.card.dealer_Card_Hit()
-                self.dealer.add_dealer_card(dealer_card)
-
-            if self.dealer.get_dealer_score() > 21:
-                self.soundmanage.win_sound()
-                self.show_message("딜러 버스트 ! 당신이 승리했습니다", (0, 0, 255))  # 결과 메시
-                self.betting.betting_manage(1) #승리 시 베팅 매니저에 1을 전달
+        if self.game_started:
+            if self.player.player_score > 21:
+                self.soundmanage.fail_sound()
+                self.show_message("버스트! 딜러가 승리했습니다.", (255, 215, 0))  # 결과 메시지
+                self.betting.betting_manage(2)
                 self.asset.load_asset()
                 self.player_assets = self.asset.get_asset()
-                self.stand_push = True
                 self.game_started_betting = False
             else:
-                self.GameManager = GameManager(self.player, self.dealer)
-                self.GameManager.comparison()
-                self.show_message("승자는 : " + self.GameManager.get_winner(),(0, 128, 0))
-                #이겼을 경우
-                if self.GameManager.get_winnerTF() == 1:
-                    self.soundmanage.win_sound()
-                    self.betting.betting_manage(1)
-                    self.player_assets = self.asset.get_asset()
-                    self.asset.load_asset()
-                    self.game_started_betting = False
-                #패배
-                elif self.GameManager.get_winnerTF() == 0:
-                    self.soundmanage.fail_sound()
-                    self.betting.betting_manage(2)
-                    self.player_assets = self.asset.get_asset()
-                    self.asset.load_asset()
-                    self.game_started_betting = False
-                #비겼을경우
-                else:
-                    self.betting.betting_manage(3) #3은 draw를 의미
-                    self.player_assets = self.asset.get_asset()
-                    self.asset.load_asset()
-                    self.game_started_betting = False
+                while self.dealer.dealer_score < 17:  # 딜러의 카드 뽑기
+                    dealer_card = self.card.dealer_Card_Hit()
+                    self.dealer.add_dealer_card(dealer_card)
 
-                self.stand_push = True
+                if self.dealer.get_dealer_score() > 21:
+                    self.soundmanage.win_sound()
+                    self.show_message("딜러 버스트 ! 당신이 승리했습니다", (0, 0, 255))  # 결과 메시
+                    self.betting.betting_manage(1)  # 승리 시 베팅 매니저에 1을 전달
+                    self.asset.load_asset()
+                    self.player_assets = self.asset.get_asset()
+                    self.stand_push = True
+                    self.game_started_betting = False
+                else:
+                    self.GameManager = GameManager(self.player, self.dealer)
+                    self.GameManager.comparison()
+                    self.show_message("승자는 : " + self.GameManager.get_winner(), (0, 128, 0))
+                    # 이겼을 경우
+                    if self.GameManager.get_winnerTF() == 1:
+                        self.soundmanage.win_sound()
+                        self.betting.betting_manage(1)
+                        self.player_assets = self.asset.get_asset()
+                        self.asset.load_asset()
+                        self.game_started_betting = False
+                    # 패배
+                    elif self.GameManager.get_winnerTF() == 0:
+                        self.soundmanage.fail_sound()
+                        self.betting.betting_manage(2)
+                        self.player_assets = self.asset.get_asset()
+                        self.asset.load_asset()
+                        self.game_started_betting = False
+                    # 비겼을경우
+                    else:
+                        self.betting.betting_manage(3)  # 3은 draw를 의미
+                        self.player_assets = self.asset.get_asset()
+                        self.asset.load_asset()
+                        self.game_started_betting = False
+
+                    self.stand_push = True
+        else:
+            self.show_message("Start 버튼을 눌러주세요", (255, 0, 0))  # 빨간색 메시지
+
 
     # 이벤트 처리
     def handle_event(self, event):
@@ -220,7 +224,7 @@ class GameScreen:
             if card in self.card_image_map:
                 image_path = self.card_image_map[card]  # 카드 이미지 경로 가져오기
             else:
-                image_path = "../assets/card_image/default.png"  # 기본 이미지 경로 (없을 경우)
+                image_path = "assets/card_image/default.png"  # 기본 이미지 경로 (없을 경우)
 
             # 카드 이미지를 로드하고 화면에 표시
             try:
