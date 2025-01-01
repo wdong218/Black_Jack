@@ -34,8 +34,8 @@ class GameScreen:
             Button(490, 640, 100, 40, "Start", "#6C91C2", "#9AB9E8", "#FFFFFF", self.start_game),  # 파란색 버튼
             Button(610, 640, 100, 40, "Hit", "#8EC6A6", "#B4DEC5", "#FFFFFF", self.hit),  # 초록색 버튼
             Button(730, 640, 100, 40, "Stand", "#E9A869", "#F4C089", "#FFFFFF", self.stand),  # 주황색 버튼
-            Button(200, 640, 100, 40, "UP", "#4CAF50", "#228B22", "#FFFFFF", self.betting.betting_up),
-            Button(300, 640, 100, 40, "DOWN", "#FF7043", "#F4511E", "#FFFFFF", self.betting.betting_down)
+            Button(200, 640, 100, 40, "UP", "#4CAF50", "#228B22", "#FFFFFF", self.betting_up),
+            Button(300, 640, 100, 40, "DOWN", "#FF7043", "#F4511E", "#FFFFFF", self.betting_down)
         ]
 
         self.card_image_map = {
@@ -251,4 +251,17 @@ class GameScreen:
         asset_text = str(asset_text)
         x, y = position
         self.screen.blit(self.font.render(asset_text, True, (255, 255, 255)), (x, y))
+    def betting_up(self):
+        if self.game_started:
+            self.show_message("게임 중 입니다. 끝난 후 베팅해주세요.", (255, 0, 0))  # 빨간색 메시지
+        else:
+            self.betting.betting_up()
+
+    def betting_down(self):
+        if self.game_started:
+            self.show_message("게임 중 입니다. 끝난 후 베팅해주세요", (255, 0, 0))  # 빨간색 메시지
+        else:
+            self.betting.betting_down()
+
+
 
