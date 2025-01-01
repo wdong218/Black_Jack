@@ -4,7 +4,7 @@ class Asset:
         Asset 초기화
         file_path: 재산 정보를 저장할 파일 경로
         """
-        self.file_path = "Asset"
+        self.file_path = "../Asset"
         self.balance = 0  # 초기값 0, 파일에서 읽어옴
         self.load_asset()
 

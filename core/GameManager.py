@@ -1,5 +1,3 @@
-from player import player
-from dealer import dealer
 class GameManager():
     def __init__(self,player,dealer):
         self.player = player

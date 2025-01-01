@@ -1,16 +1,19 @@
-from asset import Asset
-
+from ui.asset import Asset
+from sound.SoundManage import SoundManage
 class Betting:
     def __init__(self):
         self.current = 0
         self.asset = Asset()
+        self.soundmanage = SoundManage()
 
     # 현재 금액과 비교해 누를때마다 베팅 금액 상승
     def betting_up(self):
+        self.soundmanage.up_down_sound()
         if self.current < self.asset.get_asset():
             self.current += 100
 
     def betting_down(self):
+        self.soundmanage.up_down_sound()
         if self.current > 0:
             self.current -= 100
         #누를때마다 베팅 금액 감소

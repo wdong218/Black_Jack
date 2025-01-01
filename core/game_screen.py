@@ -1,18 +1,19 @@
 import pygame
-from button import Button # Button 클래스를 가져옴
-from Deck import Deck
-from Card import Card
-from player import player
-from dealer import dealer
-from GameManager import GameManager
-from Betting import Betting
-from asset import Asset
+from ui.button import Button # Button 클래스를 가져옴
+from core.Deck import Deck
+from core.Card import Card
+from entities.player import player
+from entities.dealer import dealer
+from core.GameManager import GameManager
+from entities.Betting import Betting
+from ui.asset import Asset
+from sound.SoundManage import SoundManage
 class GameScreen:
     def __init__(self, screen,font):
         # 초기화
         self.screen = screen
         self.font = font  # 메인에서 전달받은 폰트 사용
-        self.background_image = pygame.image.load("background_image/1_image.jpg")
+        self.background_image = pygame.image.load("assets/background_image/1_image.jpg")
         self.background_image = pygame.transform.scale(self.background_image, (1280, 720))  # 크기 조정
         self.betting = Betting()
         self.asset = Asset()
@@ -27,6 +28,7 @@ class GameScreen:
         self.player_score = 0
         self.game_started = False # 게임 시작 여부를 나타내는 속성 초기화
         self.show_text = False
+        self.soundmanage = SoundManage()
         # 버튼 생성
         self.buttons = [
             Button(490, 640, 100, 40, "Start", "#6C91C2", "#9AB9E8", "#FFFFFF", self.start_game),  # 파란색 버튼
@@ -37,25 +39,33 @@ class GameScreen:
         ]
 
         self.card_image_map = {
-            "AS": "card_image/AS.png", "2S": "card_image/2S.png", "3S": "card_image/3S.png", "4S": "card_image/4S.png",
-            "5S": "card_image/5S.png", "6S": "card_image/6S.png", "7S": "card_image/7S.png", "8S": "card_image/8S.png",
-            "9S": "card_image/9S.png", "10S": "card_image/10S.png", "JS": "card_image/JS.png",
-            "QS": "card_image/QS.png", "KS": "card_image/KS.png",
+            "AS": "assets/card_image/AS.png", "2S": "assets/card_image/2S.png", "3S": "assets/card_image/3S.png",
+            "4S": "assets/card_image/4S.png",
+            "5S": "assets/card_image/5S.png", "6S": "assets/card_image/6S.png", "7S": "assets/card_image/7S.png",
+            "8S": "assets/card_image/8S.png",
+            "9S": "assets/card_image/9S.png", "10S": "assets/card_image/10S.png", "JS": "assets/card_image/JS.png",
+            "QS": "assets/card_image/QS.png", "KS": "assets/card_image/KS.png",
 
-            "AH": "card_image/AH.png", "2H": "card_image/2H.png", "3H": "card_image/3H.png", "4H": "card_image/4H.png",
-            "5H": "card_image/5H.png", "6H": "card_image/6H.png", "7H": "card_image/7H.png", "8H": "card_image/8H.png",
-            "9H": "card_image/9H.png", "10H": "card_image/10H.png", "JH": "card_image/JH.png",
-            "QH": "card_image/QH.png", "KH": "card_image/KH.png",
+            "AH": "assets/card_image/AH.png", "2H": "assets/card_image/2H.png", "3H": "assets/card_image/3H.png",
+            "4H": "assets/card_image/4H.png",
+            "5H": "assets/card_image/5H.png", "6H": "assets/card_image/6H.png", "7H": "assets/card_image/7H.png",
+            "8H": "assets/card_image/8H.png",
+            "9H": "assets/card_image/9H.png", "10H": "assets/card_image/10H.png", "JH": "assets/card_image/JH.png",
+            "QH": "assets/card_image/QH.png", "KH": "assets/card_image/KH.png",
 
-            "AD": "card_image/AD.png", "2D": "card_image/2D.png", "3D": "card_image/3D.png", "4D": "card_image/4D.png",
-            "5D": "card_image/5D.png", "6D": "card_image/6D.png", "7D": "card_image/7D.png", "8D": "card_image/8D.png",
-            "9D": "card_image/9D.png", "10D": "card_image/10D.png", "JD": "card_image/JD.png",
-            "QD": "card_image/QD.png", "KD": "card_image/KD.png",
+            "AD": "assets/card_image/AD.png", "2D": "assets/card_image/2D.png", "3D": "assets/card_image/3D.png",
+            "4D": "assets/card_image/4D.png",
+            "5D": "assets/card_image/5D.png", "6D": "assets/card_image/6D.png", "7D": "assets/card_image/7D.png",
+            "8D": "assets/card_image/8D.png",
+            "9D": "assets/card_image/9D.png", "10D": "assets/card_image/10D.png", "JD": "assets/card_image/JD.png",
+            "QD": "assets/card_image/QD.png", "KD": "assets/card_image/KD.png",
 
-            "AC": "card_image/AC.png", "2C": "card_image/2C.png", "3C": "card_image/3C.png", "4C": "card_image/4C.png",
-            "5C": "card_image/5C.png", "6C": "card_image/6C.png", "7C": "card_image/7C.png", "8C": "card_image/8C.png",
-            "9C": "card_image/9C.png", "10C": "card_image/10C.png", "JC": "card_image/JC.png",
-            "QC": "card_image/QC.png", "KC": "card_image/KC.png"
+            "AC": "assets/card_image/AC.png", "2C": "assets/card_image/2C.png", "3C": "assets/card_image/3C.png",
+            "4C": "assets/card_image/4C.png",
+            "5C": "assets/card_image/5C.png", "6C": "assets/card_image/6C.png", "7C": "assets/card_image/7C.png",
+            "8C": "assets/card_image/8C.png",
+            "9C": "assets/card_image/9C.png", "10C": "assets/card_image/10C.png", "JC": "assets/card_image/JC.png",
+            "QC": "assets/card_image/QC.png", "KC": "assets/card_image/KC.png"
         }
 
         # 플레이어 상태 초기화
@@ -66,6 +76,7 @@ class GameScreen:
 
     # 버튼 동작
     def start_game(self):
+        self.soundmanage.play_start_button_sound()
         self.show_message("카드를 섞는 중입니다!", (255, 255, 255),duration= 1000)  # 결과 메시지
         self.deck = Deck()  # Deck 객체 생성
         self.deck.create_Deck()
@@ -90,6 +101,7 @@ class GameScreen:
         pygame.time.wait(duration)
 
     def hit(self):
+        self.soundmanage.hit_sound()
         if self.game_started:
             if not self.stand_push:
                 # 카드 분배 로직
@@ -98,6 +110,7 @@ class GameScreen:
 
                 # 버스트 체크
                 if self.player.get_player_score() > 21:
+                    self.soundmanage.fail_sound()
                     self.show_message("버스트! 딜러가 승리했습니다", (255, 215, 0))  # 결과 메시지
                     self.betting.betting_manage(winner=False)
                     self.stand_push = True  # 게임 종료 상태
@@ -108,7 +121,9 @@ class GameScreen:
         else:
             self.show_message("Start 버튼을 누르세요", (255, 0, 0))  # 빨간색 메시지
     def stand(self):
+        self.soundmanage.stand_sound()
         if self.player.player_score > 21:
+            self.soundmanage.fail_sound()
             self.show_message("버스트! 딜러가 승리했습니다.", (255, 215, 0))  # 결과 메시지
             self.betting.betting_manage(winner=False)
             self.asset.load_asset()
@@ -118,6 +133,7 @@ class GameScreen:
                 dealer_card = self.card.dealer_Card_Hit()
                 self.dealer.add_dealer_card(dealer_card)
             if self.dealer.get_dealer_score() > 21:
+                self.soundmanage.win_sound()
                 self.show_message("딜러 버스트 ! 당신이 승리했습니다", (0, 0, 255))  # 결과 메시지
                 self.betting.betting_manage(winner=True)
                 self.asset.load_asset()
@@ -128,10 +144,12 @@ class GameScreen:
                 self.GameManager.comparison()
                 self.show_message("승자는 : " + self.GameManager.get_winner(),(0, 128, 0))
                 if self.GameManager.get_winnerTF() == 1:
+                    self.soundmanage.win_sound()
                     self.betting.betting_manage(winner=True)
                     self.player_assets = self.asset.get_asset()
                     self.asset.load_asset()
                 elif self.GameManager.get_winnerTF() == 0:
+                    self.soundmanage.fail_sound()
                     self.betting.betting_manage(winner=False)
                     self.player_assets = self.asset.get_asset()
                     self.asset.load_asset()
@@ -145,8 +163,6 @@ class GameScreen:
         pygame.display.flip()
 
         # 화면 업데이트
-    def update(self):
-        pass  # 필요 시 추가
 
     # 화면 그리기
     def draw(self):
@@ -184,7 +200,7 @@ class GameScreen:
             if card in self.card_image_map:
                 image_path = self.card_image_map[card]  # 카드 이미지 경로 가져오기
             else:
-                image_path = "card_image/default.png"  # 기본 이미지 경로 (없을 경우)
+                image_path = "../assets/card_image/default.png"  # 기본 이미지 경로 (없을 경우)
 
             # 카드 이미지를 로드하고 화면에 표시
             try:
@@ -210,7 +226,7 @@ class GameScreen:
             if card in self.card_image_map:
                 image_path = self.card_image_map[card]  # 카드 이미지 경로 가져오기
             else:
-                image_path = "card_image/default.png"  # 기본 이미지 경로
+                image_path = "../assets/card_image/default.png"  # 기본 이미지 경로
 
             try:
                 card_image = pygame.image.load(image_path)  # 이미지 로드
