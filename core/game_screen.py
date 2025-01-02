@@ -6,7 +6,7 @@ from entities.player import player
 from entities.dealer import dealer
 from core.GameManager import GameManager
 from entities.Betting import Betting
-from ui.asset import Asset
+from entities.asset import Asset
 from sound.SoundManage import SoundManage
 class GameScreen:
     def __init__(self, screen,font):

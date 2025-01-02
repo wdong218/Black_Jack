@@ -1,4 +1,4 @@
-from ui.asset import Asset
+from entities.asset import Asset
 from sound.SoundManage import SoundManage
 class Betting:
     def __init__(self):

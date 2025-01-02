@@ -149,13 +149,13 @@ Black_Jack/
 │   ├── game_screen.py       # 게임 화면 관리
 │   └── GameManager.py       # 게임 진행 로직
 ├── entities/
+│   ├── Asset.py             # 플레이어 자산 관리
 │   ├── Betting.py           # 베팅 관련 클래스
 │   ├── dealer.py            # 딜러 클래스
 │   └── player.py            # 플레이어 클래스
 ├── sound/
 │   └── SoundManage.py       # 사운드 관리 모듈
 ├── ui/
-│   ├── asset.py             # UI 에셋 관리
 │   └── button.py            # 버튼 UI 구성
 ├── main.py                  # 게임 실행 파일
 └── README.md                # 프로젝트 설명 파일
