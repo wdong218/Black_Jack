@@ -1,7 +1,6 @@
 # Black_Jack
 
 
-다음은 수정된 GitHub 리드미 초안입니다. Notion 링크와 Pygame 설치 방법을 추가했습니다.
 
 🃏 블랙잭 게임 구현 프로젝트
 
